@@ -1,179 +1,132 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from Mini_app_test.backend.auth import verify_telegram_init_data
 from app.database import AsyncSessionLocal
-from app.models import User
+from app.models import User, VpnClient
 from app.services.vpn_service import XUIClient
 
-from sqlalchemy import select
 
-
-app = FastAPI(title="VPN Mini App")
+app = FastAPI(title="Asburium VPN Mini App")
 
 # ================= STATIC =================
-app.mount(
-    "/static",
-    StaticFiles(directory="Mini_app_test/static"),
-    name="static"
-)
+app.mount("/static", StaticFiles(directory="Mini_app_test/static"), name="static")
+app.mount("/frontend", StaticFiles(directory="Mini_app_test/frontend"), name="frontend")
 
 # ================= CORS =================
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Telegram Mini App
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ================= MODELS =================
-class TelegramAuthPayload(BaseModel):
-    initData: str
-
-
-# ================= MINI APP UI =================
-@app.get("/", response_class=HTMLResponse)
-async def index():
-    """
-    Mini App UI
-    HTML намеренно остаётся тут (ты позже вынесешь в frontend)
-    """
-    with open("Mini_app_test/frontend/index.html", "r", encoding="utf-8") as f:
-        return f.read()
-
-
-# ================= AUTH =================
-@app.post("/auth")
-async def auth(payload: TelegramAuthPayload):
-    """
-    Авторизация Mini App через Telegram initData
-    """
-    try:
-        data = verify_telegram_init_data(payload.initData)
-    except Exception:
-        raise HTTPException(status_code=401, detail="Invalid initData")
-
-    user_info = data.get("user")
-    if not user_info:
-        raise HTTPException(status_code=401, detail="No user")
-
-    telegram_id = str(user_info["id"])
-
+# ================= DB =================
+async def get_db() -> AsyncSession:
     async with AsyncSessionLocal() as session:
-        result = await session.execute(
-            select(User).where(User.telegram_id == telegram_id)
-        )
-        user = result.scalar_one_or_none()
+        yield session
 
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
+# ================= HELPERS =================
+async def get_user_from_telegram(
+    request: Request,
+    session: AsyncSession,
+) -> User:
+    init_data = request.headers.get("X-Telegram-Init-Data")
+    if not init_data:
+        raise HTTPException(status_code=401, detail="No Telegram init data")
 
-        return JSONResponse({
-            "telegram_id": telegram_id,
-            "balance": user.balance,
-            "subscription_active": user.subscription_active,
-            "subscription_until": user.subscription_until.isoformat()
-            if user.subscription_until else None,
-            "subscription_url": user.subscription_url,
-            "xui_client_id": user.xui_client_id,
-        })
-
-
-# ================= CREATE VPN =================
-@app.post("/vpn/create")
-async def create_vpn(payload: TelegramAuthPayload):
-    """
-    Создание нового VPN-подключения для пользователя (можно несколько)
-    """
-
-    # ---------- AUTH ----------
-    try:
-        data = verify_telegram_init_data(payload.initData)
-    except Exception:
-        raise HTTPException(status_code=401, detail="Invalid Telegram initData")
-
+    data = verify_telegram_init_data(init_data)
     telegram_id = str(data["user"]["id"])
 
-    async with AsyncSessionLocal() as session:
-        async with session.begin():
-
-            # ---------- USER ----------
-            result = await session.execute(
-                select(User)
-                .where(User.telegram_id == telegram_id)
-                .with_for_update()
-            )
-            user = result.scalar_one_or_none()
-
-            if not user:
-                raise HTTPException(status_code=404, detail="User not found")
-
-            # ---------- GENERATE UNIQUE EMAIL ----------
-            base_email = f"tg_{telegram_id}"
-
-            result = await session.execute(
-                select(VpnClient.xui_email)
-                .where(VpnClient.user_id == user.id)
-            )
-            existing_emails = {row[0] for row in result.all()}
-
-            email = base_email
-            counter = 1
-            while email in existing_emails:
-                email = f"{base_email}/{counter}"
-                counter += 1
-
-            # ---------- CREATE IN X-UI ----------
-            xui = XUIClient()
-            try:
-                xui_client_id, vless_url = await xui.create_client(
-                    email=email
-                )
-            finally:
-                await xui.close()
-
-            # ---------- SAVE VPN ----------
-            vpn = VpnClient(
-                user_id=user.id,
-                xui_client_id=xui_client_id,
-                xui_email=email,
-                subscription_url=vless_url,
-                active=False,
-            )
-
-            session.add(vpn)
-
-        # commit here automatically
-
-    return JSONResponse({
-        "created": True,
-        "vpn": {
-            "id": vpn.id,
-            "email": vpn.xui_email,
-            "subscription_url": vpn.subscription_url,
-            "active": vpn.active,
-        }
-    })
-
-# ================= OPEN HAPP =================
-@app.get("/open/happ")
-async def open_happ():
-    """
-    Редирект в Happ / любой клиент по vless://
-    """
-    vless_url = (
-        "vless://244c819b-b9cd-45e7-b908-69737073e7ed"
-        "@147.45.152.14:8443"
-        "?type=ws&encryption=none&path=%2Fupload%2Fsession"
-        "&security=none"
-        "#VPN"
+    result = await session.execute(
+        select(User).where(User.telegram_id == telegram_id)
     )
-    return RedirectResponse(url=vless_url, status_code=302)
+    user = result.scalar_one_or_none()
 
+    if not user:
+        # ❗ Mini App НИКОГДА не создаёт пользователя
+        raise HTTPException(
+            status_code=404,
+            detail="User must be created via bot /start",
+        )
+
+    return user
+
+# ================= UI =================
+@app.get("/", response_class=HTMLResponse)
+async def index():
+    with open("Mini_app_test/frontend/index.html", encoding="utf-8") as f:
+        return f.read()
+
+# ================= API: ME =================
+@app.get("/api/me")
+async def api_me(
+    request: Request,
+    session: AsyncSession = Depends(get_db),
+):
+    user = await get_user_from_telegram(request, session)
+
+    return {
+        "telegram_id": user.telegram_id,
+        "balance": user.balance,
+        "subscription_active": user.subscription_active,
+    }
+
+# ================= API: VPN LIST =================
+@app.get("/api/vpn/list")
+async def api_vpn_list(
+    request: Request,
+    session: AsyncSession = Depends(get_db),
+):
+    user = await get_user_from_telegram(request, session)
+
+    result = await session.execute(
+        select(VpnClient).where(VpnClient.user_id == user.id)
+    )
+    clients = result.scalars().all()
+
+    return [
+        {
+            "id": c.id,
+            "email": c.email,
+            "vless_url": c.vless_url,
+            "enabled": c.enabled,
+        }
+        for c in clients
+    ]
+
+# ================= API: VPN CREATE =================
+@app.post("/api/vpn/create")
+async def api_vpn_create(
+    request: Request,
+    session: AsyncSession = Depends(get_db),
+):
+    user = await get_user_from_telegram(request, session)
+
+    xui = XUIClient()
+    try:
+        email = f"tg_{user.telegram_id}"
+        client_id, vless_url = await xui.create_client(email=email)
+    finally:
+        await xui.close()
+
+    vpn = VpnClient(
+        user_id=user.id,
+        xui_client_id=client_id,
+        email=email,
+        vless_url=vless_url,
+        enabled=True,
+    )
+    session.add(vpn)
+    await session.commit()
+
+    return {"status": "ok"}
 
 # ================= HEALTH =================
 @app.get("/health")

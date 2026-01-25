@@ -388,18 +388,20 @@ body {
 </footer>
 
 <script>
-/* ================== TELEGRAM ================== */
+/* ======================================================
+   ASBURIUM VPN — MINI APP (FINAL STABLE VERSION)
+====================================================== */
+
 const tg = window.Telegram.WebApp;
-tg.ready();
-tg.expand();
 
 /* ================== STATE ================== */
 const state = {
   user: null,
-  activeTab: 'vpn',
-  vpnCreated: false,
-  paymentMethod: 'sbp',
+  vpnList: [],
+  activeTab: "vpn",
+  paymentMethod: "sbp",
   amount: 150,
+  ready: false,
 };
 
 /* ================== HELPERS ================== */
@@ -407,227 +409,220 @@ function qs(id) {
   return document.getElementById(id);
 }
 
-function qsa(sel) {
-  return document.querySelectorAll(sel);
+function showAlert(text) {
+  if (tg?.showAlert) tg.showAlert(text);
+  else alert(text);
 }
 
-function show(el) {
-  el.style.display = 'block';
-}
-
-function hide(el) {
-  el.style.display = 'none';
-}
-
-function copyToClipboard(text) {
-  navigator.clipboard.writeText(text).then(() => {
-    tg.showToast?.({ text: 'Ссылка скопирована' }) ||
-    alert('Ссылка скопирована');
-  });
-}
-
-/* ================== INIT ================== */
-document.addEventListener('DOMContentLoaded', () => {
-  initAuth();
-  initUI();
-});
-
-/* ================== AUTH ================== */
-async function initAuth() {
-  try {
-    const res = await fetch('/auth', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ initData: tg.initData })
-    });
-
-    if (!res.ok) throw new Error('Auth failed');
-
-    state.user = await res.json();
-    state.vpnCreated = Boolean(state.user.xui_client_id);
-
-    renderUser();
-    renderVPN();
-  } catch (e) {
-    console.error(e);
-    tg.showAlert('Ошибка авторизации');
+/* ================== TELEGRAM INIT ================== */
+async function waitForInitData() {
+  while (!tg.initData || tg.initData.length === 0) {
+    await new Promise(r => setTimeout(r, 300));
   }
 }
 
-/* ================== RENDER USER ================== */
-function renderUser() {
-  qs('username').innerText =
-    tg.initDataUnsafe.user?.first_name || 'User';
+/* ================== API ================== */
+async function api(path, options = {}) {
+  const res = await fetch(path, {
+    ...options,
+    headers: {
+      ...(options.headers || {}),
+      "X-Telegram-Init-Data": tg.initData,
+    },
+  });
 
-  qs('userid').innerText =
-    state.user.telegram_id || '';
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || "API error");
+  }
 
-  qs('avatar').src =
-    tg.initDataUnsafe.user?.photo_url || '';
+  return res.json();
+}
 
-  // баланс (в хедере и дровере)
-  qsa('.balance span').forEach(el => {
+/* ================== AUTH / ME ================== */
+async function loadMe() {
+  state.user = await api("/api/me");
+
+  qs("username").innerText =
+    tg.initDataUnsafe?.user?.first_name || "User";
+
+  qs("userid").innerText =
+    tg.initDataUnsafe?.user?.id || "";
+
+  qs("avatar").src =
+    tg.initDataUnsafe?.user?.photo_url || "";
+
+  document.querySelectorAll(".balance span").forEach(el => {
     el.innerText = `${state.user.balance} ₽`;
   });
-
-  const drawerBalance = document.querySelector('.balance-card strong');
-  if (drawerBalance) {
-    drawerBalance.innerText = `💰 ${state.user.balance} ₽`;
-  }
 }
 
-/* ================== RENDER VPN ================== */
-function renderVPN() {
-  const vpnView = qs('vpn');
-  if (!vpnView) return;
+/* ================== VPN ================== */
+async function loadVpnList() {
+  const data = await api("/api/vpn/list");
+  state.vpnList = Array.isArray(data) ? data : [];
+  renderVpnBlock();
+}
 
-  // если VPN не создан
-  if (!state.vpnCreated) {
-    vpnView.innerHTML = `
+function renderVpnBlock() {
+  const container = qs("vpn");
+  container.innerHTML = "";
+
+  if (state.vpnList.length === 0) {
+    container.innerHTML = `
       <div class="card">
         <h3>VPN не создан</h3>
-        <p style="opacity:.7;margin-top:8px">
-          Нажмите кнопку ниже, чтобы создать VPN
+        <p style="opacity:.7;margin:8px 0">
+          Создайте VPN для подключения устройства
         </p>
-        <button class="primary-btn" onclick="createVPN()">
+        <button class="primary-btn" id="create-vpn-btn">
           ➕ Создать VPN
         </button>
       </div>
     `;
+
+    qs("create-vpn-btn").addEventListener("click", createVpn);
     return;
   }
 
-  // VPN создан
-  vpnView.innerHTML = `
-    <div class="card">
-      <h3>Asberry-vpn</h3>
+  state.vpnList.forEach(vpn => {
+    const el = document.createElement("div");
+    el.className = "card";
 
-      <div class="row">
-        <span>ID клиента</span>
-        <strong>${state.user.telegram_id}</strong>
-      </div>
-
-      <div class="row">
-        <span>Стоимость</span>
-        <strong>5 ₽ / день</strong>
-      </div>
-
-      <div class="row">
-        <span>Трафик</span>
-        <strong>Безлимитный</strong>
-      </div>
-
+    el.innerHTML = `
+      <h3>${vpn.email}</h3>
       <div class="row">
         <span>Статус</span>
         <span class="status">
-          ● ${state.user.subscription_active ? 'Подключен' : 'Отключён'}
+          ● ${vpn.enabled ? "Подключен" : "Отключен"}
         </span>
       </div>
-
-      <button class="primary-btn" onclick="copyVPN()">
+      <button class="primary-btn">
         🔒 Скопировать ссылку VPN
       </button>
-    </div>
-  `;
+    `;
+
+    el.querySelector("button")
+      .addEventListener("click", () => copyVpn(vpn.vless_url));
+
+    container.appendChild(el);
+  });
 }
 
-/* ================== CREATE VPN ================== */
-async function createVPN() {
+async function createVpn() {
   try {
-    const res = await fetch('/vpn/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ initData: tg.initData })
-    });
-
-    if (!res.ok) throw new Error('VPN create error');
-
-    const data = await res.json();
-    state.vpnCreated = true;
-    state.user.subscription_url = data.subscription_url;
-    state.user.subscription_active = data.subscription_active;
-
-    renderVPN();
-    tg.showAlert('VPN успешно создан');
+    await api("/api/vpn/create", { method: "POST" });
+    showAlert("VPN успешно создан");
+    await loadVpnList();
   } catch (e) {
     console.error(e);
-    tg.showAlert('Ошибка создания VPN');
+    showAlert("Ошибка создания VPN");
   }
 }
 
-/* ================== COPY VPN ================== */
-function copyVPN() {
-  if (!state.user.subscription_url) {
-    tg.showAlert('Ссылка ещё не создана');
-    return;
-  }
-  copyToClipboard(state.user.subscription_url);
+function copyVpn(url) {
+  navigator.clipboard
+    .writeText(url)
+    .then(() => showAlert("VPN-ссылка скопирована"))
+    .catch(() => showAlert("Не удалось скопировать"));
+}
+
+/* ================== PAYMENTS ================== */
+function goToPayment() {
+  showAlert(
+    `Оплата\n` +
+    `Метод: ${state.paymentMethod.toUpperCase()}\n` +
+    `Сумма: ${state.amount} ₽`
+  );
 }
 
 /* ================== UI ================== */
-function initUI() {
-  // overlay
-  qs('overlay').addEventListener('click', closeDrawer);
-
+function bindUI() {
   // методы оплаты
-  qsa('.pay-method').forEach(el => {
-    el.addEventListener('click', () => {
-      qsa('.pay-method').forEach(p => p.classList.remove('active'));
-      el.classList.add('active');
+  document.querySelectorAll(".pay-method").forEach(el => {
+    el.addEventListener("click", () => {
+      document
+        .querySelectorAll(".pay-method")
+        .forEach(p => p.classList.remove("active"));
+
+      el.classList.add("active");
       state.paymentMethod =
-        el.innerText.includes('Карта') ? 'card' : 'sbp';
+        el.innerText.includes("Карта") ? "card" : "sbp";
     });
   });
 
   // суммы
-  qsa('.amount').forEach(el => {
-    el.addEventListener('click', () => {
-      qsa('.amount').forEach(a => a.classList.remove('active'));
-      el.classList.add('active');
-      state.amount = parseInt(el.innerText);
+  document.querySelectorAll(".amount").forEach(el => {
+    el.addEventListener("click", () => {
+      document
+        .querySelectorAll(".amount")
+        .forEach(a => a.classList.remove("active"));
+
+      el.classList.add("active");
+      state.amount = Number(el.innerText.replace(/\D/g, ""));
     });
   });
+
+  // кнопка оплаты
+  qs("pay-btn")?.addEventListener("click", goToPayment);
 }
 
 /* ================== NAVIGATION ================== */
 function openTab(tab) {
   state.activeTab = tab;
 
-  qsa('.view').forEach(v => v.classList.remove('active'));
-  qs(tab).classList.add('active');
+  document.querySelectorAll(".view")
+    .forEach(v => v.classList.remove("active"));
 
-  qsa('.footer-btn').forEach(b => b.classList.remove('active'));
-  if (tab === 'topup') qsa('.footer-btn')[0]?.classList.add('active');
-  if (tab === 'help') qsa('.footer-btn')[1]?.classList.add('active');
+  qs(tab)?.classList.add("active");
+
+  document.querySelectorAll(".footer-btn")
+    .forEach(b => b.classList.remove("active"));
+
+  if (tab === "topup") {
+    document.querySelector(".footer-btn:nth-child(1)")?.classList.add("active");
+  }
+
+  if (tab === "help") {
+    document.querySelector(".footer-btn:nth-child(3)")?.classList.add("active");
+  }
 }
 
 /* ================== DRAWER ================== */
 function openDrawer() {
-  qs('drawer').classList.add('open');
-  qs('overlay').classList.add('open');
+  qs("drawer").classList.add("open");
+  qs("overlay").classList.add("open");
 }
 
 function closeDrawer() {
-  qs('drawer').classList.remove('open');
-  qs('overlay').classList.remove('open');
+  qs("drawer").classList.remove("open");
+  qs("overlay").classList.remove("open");
 }
 
-/* ================== PAYMENTS (заглушка) ================== */
-async function createPayment() {
-  tg.showAlert(
-    `Оплата:\n${state.amount} ₽\nМетод: ${
-      state.paymentMethod === 'sbp' ? 'СБП' : 'Карта'
-    }`
-  );
-}
+/* ================== INIT ================== */
+document.addEventListener("DOMContentLoaded", async () => {
+  tg.ready();
+  tg.expand();
 
-/* ================== EXPORT ================== */
+  await waitForInitData(); // ⬅️ КЛЮЧЕВО
+
+  try {
+    await loadMe();
+    await loadVpnList();
+    bindUI();
+    state.ready = true;
+  } catch (e) {
+    console.error(e);
+    showAlert("Ошибка загрузки данных");
+  }
+});
+
+/* ================== EXPOSE ================== */
+window.openTab = openTab;
 window.openDrawer = openDrawer;
 window.closeDrawer = closeDrawer;
-window.openTab = openTab;
-window.createVPN = createVPN;
-window.copyVPN = copyVPN;
-window.createPayment = createPayment;
+window.createVpn = createVpn;
+window.copyVpn = copyVpn;
 </script>
 
 </body>

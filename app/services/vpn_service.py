@@ -29,8 +29,7 @@ class XUIClient:
         )
         r.raise_for_status()
 
-        data = r.json()
-        if not data.get("success"):
+        if not r.json().get("success"):
             raise RuntimeError("X-UI login failed")
 
     async def close(self):
@@ -42,8 +41,8 @@ class XUIClient:
             f"{self.base}/panel/api/inbounds/get/{self.inbound_id}"
         )
         r.raise_for_status()
-
         data = r.json()
+
         if not data.get("success"):
             raise RuntimeError("Failed to fetch inbound")
 
@@ -60,40 +59,28 @@ class XUIClient:
             raise RuntimeError("Failed to update inbound")
 
     # ---------- UNIQUE EMAIL ----------
-    def _generate_unique_email(self, clients: list, base_email: str) -> str:
-        """
-        Генерирует уникальное имя клиента:
-        tg_123
-        tg_123/1
-        tg_123/2
-        ...
-        """
-        existing_emails = {c.get("email") for c in clients if c.get("email")}
+    def _generate_unique_email(self, base: str, clients: list) -> str:
+        existing = {c["email"] for c in clients if "email" in c}
 
-        if base_email not in existing_emails:
-            return base_email
+        if base not in existing:
+            return base
 
-        index = 1
-        while True:
-            candidate = f"{base_email}/{index}"
-            if candidate not in existing_emails:
-                return candidate
-            index += 1
+        i = 1
+        while f"{base}/{i}" in existing:
+            i += 1
 
-    # ---------- CLIENT CREATE ----------
-    async def create_client(self, telegram_id: str) -> tuple[str, str]:
+        return f"{base}/{i}"
+
+    # ---------- CREATE CLIENT ----------
+    async def create_client(self, telegram_id: str) -> tuple[str, str, str]:
         await self.login()
 
         inbound = await self.get_inbound()
-
         settings_json = json.loads(inbound["settings"])
         clients = settings_json.get("clients", [])
 
-        # базовое имя
-        base_email = f"tg_{telegram_id}"
-
-        # уникальное имя
-        email = self._generate_unique_email(clients, base_email)
+        email_base = f"tg_{telegram_id}"
+        email = self._generate_unique_email(email_base, clients)
 
         client_id = str(uuid4())
 
@@ -112,20 +99,16 @@ class XUIClient:
 
         await self.update_inbound(inbound)
 
-        return client_id, self._build_vless_url(
+        vless_url = self._build_vless_url(
             client_id=client_id,
             email=email,
             inbound=inbound,
         )
 
-    # ---------- CLIENT ENABLE / DISABLE ----------
-    async def enable_client(self, client_id: str):
-        await self._set_client_enabled(client_id, True)
+        return client_id, email, vless_url
 
-    async def disable_client(self, client_id: str):
-        await self._set_client_enabled(client_id, False)
-
-    async def _set_client_enabled(self, client_id: str, enabled: bool):
+    # ---------- ENABLE / DISABLE ----------
+    async def set_client_enabled(self, client_id: str, enabled: bool):
         await self.login()
 
         inbound = await self.get_inbound()
@@ -133,7 +116,7 @@ class XUIClient:
         clients = settings_json.get("clients", [])
 
         for client in clients:
-            if client.get("id") == client_id:
+            if client["id"] == client_id:
                 client["enable"] = enabled
                 inbound["settings"] = json.dumps(settings_json, ensure_ascii=False)
                 await self.update_inbound(inbound)
@@ -146,14 +129,6 @@ class XUIClient:
         stream = json.loads(inbound["streamSettings"])
         reality = stream.get("realitySettings", {})
 
-        network = stream.get("network", "tcp")
-        security = stream.get("security", "reality")
-
-        pbk = settings.XUI_REALITY_PUBLIC_KEY
-        sid = reality.get("shortIds", [""])[0]
-        sni = reality.get("serverNames", [""])[0]
-        spx = reality.get("spiderX", "/")
-
         host = settings.XUI_HOST
         port = inbound["port"]
 
@@ -161,14 +136,14 @@ class XUIClient:
 
         return (
             f"vless://{client_id}@{host}:{port}"
-            f"?type={network}"
+            f"?type=ws"
             f"&encryption=none"
-            f"&security={security}"
-            f"&pbk={pbk}"
+            f"&security=reality"
+            f"&pbk={settings.XUI_REALITY_PUBLIC_KEY}"
             f"&fp=chrome"
-            f"&sni={sni}"
-            f"&sid={sid}"
-            f"&spx={quote(spx)}"
+            f"&sni={reality.get('serverNames', [''])[0]}"
+            f"&sid={reality.get('shortIds', [''])[0]}"
+            f"&spx={quote(reality.get('spiderX', '/'))}"
             f"#{quote(remark)}"
         )
 

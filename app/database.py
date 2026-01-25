@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, declarative_base
 
 DATABASE_URL = "sqlite+aiosqlite:///./vpn.db"
 
@@ -13,4 +13,7 @@ AsyncSessionLocal = sessionmaker(
     class_=AsyncSession,
     expire_on_commit=False,
 )
+
+# ⬇⬇⬇ ВОТ ЭТОГО У ТЕБЯ НЕ ХВАТАЛО ⬇⬇⬇
+Base = declarative_base()
 
