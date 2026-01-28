@@ -4,4 +4,21 @@ __pycache__/
 .idea/
 .vscode/
 *.log
+=======
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+
+# Envs
+.env
+*.env
+venv/
+backend/app/venv/
+bot/venv/
+
+# OS
+.DS_Store
 
