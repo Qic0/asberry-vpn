@@ -1,70 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Header, HTTPException
 
-from app.database import get_db
-from app.models.vpn import VPN
-from app.models.user import User
-from app.api.deps import get_current_user
-from app.services.xui import login, create_vpn_client
+from app.services.telegram_auth import verify_init_data
 
-router = APIRouter(prefix="/vpn", tags=["vpn"])
+router = APIRouter(tags=["vpn"])
 
 
-@router.get("/list")
-def list_vpns(
-    user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
-    vpns = (
-        db.query(VPN)
-        .filter(VPN.user_id == user.id)
-        .all()
-    )
-
-    return [
-        {
-            "id": vpn.id,
-            "email": vpn.email,
-            "vless_url": vpn.vless_url,
-            "enabled": vpn.enabled,
-        }
-        for vpn in vpns
-    ]
-
-
-@router.post("/create")
-def create_vpn(
-    user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
-    # 1. логинимся в x-ui
+@router.get("/api/vpn/list")
+def vpn_list(x_telegram_init_data: str = Header(...)):
     try:
-        login()
-    except Exception:
-        raise HTTPException(status_code=500, detail="x-ui login failed")
+        verify_init_data(x_telegram_init_data)
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=str(e))
 
-    # 2. создаём VPN в x-ui
-    try:
-        data = create_vpn_client(user.id)
-    except Exception:
-        raise HTTPException(status_code=500, detail="x-ui client creation failed")
-
-    # 3. сохраняем в БД
-    vpn = VPN(
-        user_id=user.id,
-        email=data["email"],
-        vless_url=data["vless_url"],
-        enabled=True,
-    )
-
-    db.add(vpn)
-    db.commit()
-    db.refresh(vpn)
-
-    return {
-        "id": vpn.id,
-        "email": vpn.email,
-        "vless_url": vpn.vless_url,
-        "enabled": vpn.enabled,
-    }
+    return []
 

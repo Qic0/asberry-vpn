@@ -1,30 +1,19 @@
-# app/models/user.py Модель пользователя (SQLite)
-from sqlalchemy import Column, Integer, BigInteger, String, DateTime
-from sqlalchemy.sql import func
+from sqlalchemy import Column, Integer, BigInteger, DateTime
+from sqlalchemy.ext.declarative import declarative_base
+from datetime import datetime
 
-from app.database import Base
+Base = declarative_base()
 
 
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
 
-    telegram_id = Column(
-        BigInteger,
-        unique=True,
-        index=True,
-        nullable=False
-    )
+    # Telegram — ВНЕШНИЙ идентификатор
+    telegram_id = Column(BigInteger, unique=True, index=True, nullable=False)
 
-    username = Column(String, nullable=True)
-    first_name = Column(String, nullable=True)
+    balance = Column(Integer, default=0)
 
-    # 10 ₽ = 2 дня теста (5 ₽ / день)
-    balance = Column(Integer, default=10)
-
-    created_at = Column(
-        DateTime(timezone=True),
-        server_default=func.now()
-    )
+    created_at = Column(DateTime, default=datetime.utcnow)
 

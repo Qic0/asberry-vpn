@@ -1,20 +1,273 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Asburium VPN</title>
 
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
-<link rel="stylesheet" href="/static/css/main.css">
+<style>
+/* ================= RESET ================= */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+body {
+  background: #05070f;
+  color: #fff;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ================= HEADER ================= */
+.header {
+  height: 90px;
+  background: url("/static/robot_in_space.png") center -55px / cover no-repeat;
+}
+
+.header-bar {
+  height: 56px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.menu-btn {
+  font-size: 26px;
+  cursor: pointer;
+}
+
+.balance {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: rgba(20,25,40,.95);
+  border-radius: 999px;
+  box-shadow: 0 0 18px rgba(255,200,0,.45);
+}
+
+.balance span {
+  color: #ffd54a;
+  font-weight: 600;
+}
+
+.balance .plus {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #3b82f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* ================= DRAWER ================= */
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  opacity: 0;
+  pointer-events: none;
+  transition: .3s;
+  z-index: 9;
+}
+.drawer-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  left: -65%;
+  width: 65%;
+  height: 100%;
+  background: linear-gradient(180deg, #0b1020, #05070f);
+  padding: 20px;
+  transition: .3s;
+  z-index: 10;
+}
+.drawer.open { left: 0; }
+
+.drawer .user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.drawer .user img {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+}
+
+.drawer .balance-card {
+  background: #0f172a;
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 18px;
+}
+.drawer .balance-card strong {
+  font-size: 20px;
+}
+.drawer .balance-card button {
+  margin-top: 10px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  background: #3b82f6;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.drawer .item {
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  cursor: pointer;
+}
+
+/* ================= MAIN ================= */
+.main {
+  position: absolute;
+  top: 90px;
+  bottom: 92px;
+  left: 0;
+  right: 0;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.view { display: none; }
+.view.active { display: block; }
+
+/* ================= CARD ================= */
+.card {
+  background: linear-gradient(180deg, #0e162a, #070b17);
+  border-radius: 22px;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+
+/* ================= TOPUP (ВОЗВРАЩЁН ДИЗАЙН) ================= */
+.topup-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.topup-sub {
+  opacity: .7;
+  margin-bottom: 14px;
+}
+
+.pay-methods {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.pay-method {
+  flex: 1;
+  background: #0f172a;
+  border-radius: 16px;
+  padding: 18px;
+  text-align: center;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+.pay-method.active {
+  border-color: #3b82f6;
+}
+.pay-method span {
+  display: block;
+  margin-top: 6px;
+  font-weight: 600;
+}
+
+.amount {
+  background: #0f172a;
+  border-radius: 18px;
+  padding: 18px;
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+.amount.active {
+  outline: 2px solid #3b82f6;
+}
+.amount strong {
+  font-size: 22px;
+}
+.amount small {
+  display: block;
+  opacity: .7;
+  margin-top: 6px;
+}
+
+.primary-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 18px;
+  border: none;
+  background: #3b82f6;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 12px;
+}
+
+/* ================= FOOTER ================= */
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 92px;
+  background: rgba(10,14,30,.75);
+  backdrop-filter: blur(18px);
+  border-top: 1px solid rgba(255,255,255,.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.footer-btn {
+  flex: 1;
+  text-align: center;
+  color: #8b93b7;
+  font-size: 12px;
+  cursor: pointer;
+}
+.footer-btn.active {
+  color: #3b82f6;
+}
+
+.footer-core {
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  background: radial-gradient(circle at top, #60a5fa, #2563eb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+}
+</style>
 </head>
 
 <body>
 
-<div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
+<div id="overlay" class="drawer-overlay"></div>
 
-<div class="drawer" id="drawer">
+<div id="drawer" class="drawer">
   <div class="user">
     <img id="avatar">
     <div>
@@ -25,8 +278,8 @@
 
   <div class="balance-card">
     <div>Мой баланс</div>
-    <strong>💰 0 ₽</strong>
-    <button onclick="openTab('topup'); closeDrawer()">Пополнить</button>
+    <strong id="drawerBalance">💰 0 ₽</strong>
+    <button id="drawerTopupBtn">Пополнить</button>
   </div>
 
   <div class="item">👤 Мой профиль</div>
@@ -38,19 +291,17 @@
 
 <header class="header">
   <div class="header-bar">
-    <div class="menu-btn" onclick="openDrawer()">☰</div>
+    <div id="menuBtn" class="menu-btn">☰</div>
     <div class="balance">
-      💰 <span>50 ₽</span>
-      <div class="plus" onclick="openTab('topup')">+</div>
+      💰 <span id="headerBalance">0 ₽</span>
+      <div id="plusBtn" class="plus">+</div>
     </div>
   </div>
 </header>
 
 <main class="main">
-
   <div id="vpn" class="view active">
-   <div class="card" id="vpnCard">
-    </div>
+    <div class="card">VPN</div>
   </div>
 
   <div id="topup" class="view">
@@ -62,8 +313,6 @@
         <div class="pay-method active">💰<span>СБП</span></div>
         <div class="pay-method">💳<span>Банковская карта</span></div>
       </div>
-
-      <div class="amounts-title">Сумма пополнения</div>
 
       <div class="amount active">
         <strong>150 ₽</strong>
@@ -78,278 +327,77 @@
         <small>Подписка на 3 месяца</small>
       </div>
 
-<button class="primary-btn" onclick="createPayment()">
-  Перейти к оплате
-</button>
+      <button class="primary-btn" id="payBtn">Перейти к оплате</button>
     </div>
   </div>
 
   <div id="help" class="view">
-    <div class="card">
-      <h3>Инструкции</h3>
-      <p>Инструкции по подключению VPN</p>
-    </div>
+    <div class="card">Инструкции</div>
   </div>
-
 </main>
 
 <footer class="footer">
-  <div class="footer-btn active" onclick="openTab('topup')">
-    <span>💰</span>Пополнить
-  </div>
-
-  <div class="footer-core" onclick="openTab('vpn')">
-    VPN
-  </div>
-
-  <div class="footer-btn" onclick="openTab('help')">
-    <span>📘</span>Инструкции
-  </div>
+  <div class="footer-btn" data-tab="topup">Пополнить</div>
+  <div class="footer-core" data-tab="vpn">VPN</div>
+  <div class="footer-btn" data-tab="help">Инструкции</div>
 </footer>
 
 <script>
-/* ======================================================
-   ASBURIUM VPN — MINI APP (FINAL STABLE VERSION)
-====================================================== */
-
 const tg = window.Telegram.WebApp;
+tg.ready();
+tg.expand();
 
-console.log("initData:", tg.initData);
-console.log("initDataUnsafe:", tg.initDataUnsafe);
+/* USER */
+const user = tg.initDataUnsafe?.user;
+if (user) {
+  avatar.src = user.photo_url || "";
+  username.textContent = user.first_name || "User";
+  userid.textContent = user.id || "";
+}
 
-/* ================== STATE ================== */
-const state = {
-  user: null,
-  vpnList: [],
-  activeTab: "vpn",
-  paymentMethod: "sbp",
-  amount: 150,
-  ready: false,
+/* NAV */
+function openTab(tab) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(tab).classList.add('active');
+
+  document.querySelectorAll('.footer-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`[data-tab="${tab}"]`)?.classList.add('active');
+}
+
+/* EVENTS */
+menuBtn.onclick = () => {
+  drawer.classList.add('open');
+  overlay.classList.add('open');
+};
+overlay.onclick = () => {
+  drawer.classList.remove('open');
+  overlay.classList.remove('open');
+};
+plusBtn.onclick = () => openTab('topup');
+drawerTopupBtn.onclick = () => {
+  drawer.classList.remove('open');
+  overlay.classList.remove('open');
+  openTab('topup');
 };
 
-/* ================== HELPERS ================== */
-function qs(id) {
-  return document.getElementById(id);
-}
+document.querySelectorAll('[data-tab]').forEach(b =>
+  b.onclick = () => openTab(b.dataset.tab)
+);
 
-function showAlert(text) {
-  if (tg?.showAlert) tg.showAlert(text);
-  else alert(text);
-}
-
-/* ================== WAIT TELEGRAM ================== */
-async function waitForTelegramInit() {
-  while (!tg.initData || tg.initData.length === 0) {
-    await new Promise(r => setTimeout(r, 200));
-  }
-}
-
-/* ================== API ================== */
-async function api(path, options = {}) {
-  const res = await fetch(path, {
-    ...options,
-    headers: {
-      ...(options.headers || {}),
-      "X-Telegram-Init-Data": tg.initData,
-    },
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || "API error");
-  }
-
-  return res.json();
-}
-
-/* ================== USER ================== */
-async function loadMe() {
-  state.user = await api("/api/me");
-
-  // Telegram user info
-  qs("username").innerText =
-    tg.initDataUnsafe?.user?.first_name || "User";
-
-  qs("userid").innerText =
-    tg.initDataUnsafe?.user?.id || "";
-
-  qs("avatar").src =
-    tg.initDataUnsafe?.user?.photo_url || "";
-
-  // Balance
-  document.querySelectorAll(".balance span").forEach(el => {
-    el.innerText = `${state.user.balance} ₽`;
-  });
-}
-
-/* ================== VPN ================== */
-async function loadVpnList() {
-  const data = await api("/api/vpn/list");
-  state.vpnList = Array.isArray(data) ? data : [];
-  renderVpnBlock();
-}
-
-function renderVpnBlock() {
-  const container = qs("vpn");
-  container.innerHTML = "";
-
-  if (state.vpnList.length === 0) {
-    container.innerHTML = `
-      <div class="card">
-        <h3>VPN не создан</h3>
-        <p style="opacity:.7;margin:8px 0">
-          Создайте VPN для подключения устройства
-        </p>
-        <button class="primary-btn" id="create-vpn-btn">
-          ➕ Создать VPN
-        </button>
-      </div>
-    `;
-
-    qs("create-vpn-btn").onclick = createVpn;
-    return;
-  }
-
-  state.vpnList.forEach(vpn => {
-    const el = document.createElement("div");
-    el.className = "card";
-
-    el.innerHTML = `
-      <h3>${vpn.email || vpn.name || "VPN"}</h3>
-      <div class="row">
-        <span>Статус</span>
-        <span class="status">
-          ● ${vpn.enabled ? "Подключен" : "Отключен"}
-        </span>
-      </div>
-      <button class="primary-btn">
-        🔒 Скопировать ссылку VPN
-      </button>
-    `;
-
-    el.querySelector("button").onclick = () => {
-      if (!vpn.vless_url) {
-        showAlert("Ссылка ещё не создана");
-        return;
-      }
-      copyVpn(vpn.vless_url);
-    };
-
-    container.appendChild(el);
-  });
-}
-
-async function createVpn() {
-  try {
-    await api("/api/vpn/create", { method: "POST" });
-    showAlert("VPN успешно создан");
-    await loadVpnList();
-  } catch (e) {
-    console.error(e);
-    showAlert("Ошибка создания VPN");
-  }
-}
-
-function copyVpn(url) {
-  navigator.clipboard
-    .writeText(url)
-    .then(() => showAlert("VPN-ссылка скопирована"))
-    .catch(() => showAlert("Не удалось скопировать"));
-}
-
-/* ================== PAYMENTS (stub) ================== */
-function createPayment() {
-  showAlert(
-    `Оплата\n` +
-    `Метод: ${state.paymentMethod.toUpperCase()}\n` +
-    `Сумма: ${state.amount} ₽`
-  );
-}
-
-/* ================== UI ================== */
-function bindUI() {
-  // payment methods
-  document.querySelectorAll(".pay-method").forEach(el => {
-    el.onclick = () => {
-      document.querySelectorAll(".pay-method")
-        .forEach(p => p.classList.remove("active"));
-
-      el.classList.add("active");
-      state.paymentMethod =
-        el.innerText.includes("Карта") ? "card" : "sbp";
-    };
-  });
-
-  // amounts
-  document.querySelectorAll(".amount").forEach(el => {
-    el.onclick = () => {
-      document.querySelectorAll(".amount")
-        .forEach(a => a.classList.remove("active"));
-
-      el.classList.add("active");
-      state.amount = Number(el.innerText.replace(/\D/g, ""));
-    };
-  });
-}
-
-/* ================== NAVIGATION ================== */
-function openTab(tab) {
-  state.activeTab = tab;
-
-  document.querySelectorAll(".view")
-    .forEach(v => v.classList.remove("active"));
-
-  qs(tab)?.classList.add("active");
-
-  document.querySelectorAll(".footer-btn")
-    .forEach(b => b.classList.remove("active"));
-
-  if (tab === "topup") {
-    document.querySelector(".footer-btn:nth-child(1)")?.classList.add("active");
-  }
-
-  if (tab === "help") {
-    document.querySelector(".footer-btn:nth-child(3)")?.classList.add("active");
-  }
-}
-
-/* ================== DRAWER ================== */
-function openDrawer() {
-  qs("drawer").classList.add("open");
-  qs("overlay").classList.add("open");
-}
-
-function closeDrawer() {
-  qs("drawer").classList.remove("open");
-  qs("overlay").classList.remove("open");
-}
-
-/* ================== INIT ================== */
-document.addEventListener("DOMContentLoaded", async () => {
-  tg.ready();
-  tg.expand();
-
-  await waitForTelegramInit();
-
-  try {
-    await loadMe();
-    await loadVpnList();
-    bindUI();
-    state.ready = true;
-  } catch (e) {
-    console.error(e);
-    showAlert("Ошибка загрузки данных");
-  }
+document.querySelectorAll('.pay-method').forEach(el => {
+  el.onclick = () => {
+    document.querySelectorAll('.pay-method').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+  };
+});
+document.querySelectorAll('.amount').forEach(el => {
+  el.onclick = () => {
+    document.querySelectorAll('.amount').forEach(a => a.classList.remove('active'));
+    el.classList.add('active');
+  };
 });
 
-/* ================== EXPOSE ================== */
-window.openTab = openTab;
-window.openDrawer = openDrawer;
-window.closeDrawer = closeDrawer;
-window.createVpn = createVpn;
-window.copyVpn = copyVpn;
-window.createPayment = createPayment;
-</script>
+payBtn.onclick = () => tg.showAlert("Переход к оплате");
 </script>
 
 </body>
