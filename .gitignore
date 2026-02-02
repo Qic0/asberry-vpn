@@ -22,3 +22,13 @@ bot/venv/
 # OS
 .DS_Store
 
+# zip / artifacts
+*.zip
+
+# local db
+*.sqlite
+*.sqlite3
+
+# node (на будущее)
+node_modules/
+
