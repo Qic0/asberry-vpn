@@ -12,3 +12,11 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
+XUI_BASE_URL = "https://xui.dycani.ru:31308"
+XUI_PANEL_PATH = "xsYuxKzG2acQjiEbID"
+
+XUI_USERNAME = "bW4ctc2eNl"
+XUI_PASSWORD = "hUVcAlcnTM"
+
+XUI_INBOUND_ID = 2
+

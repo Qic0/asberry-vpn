@@ -1,3 +1,4 @@
+/* RESET */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -12,7 +13,7 @@ body {
   overflow: hidden;
 }
 
-/* ================= HEADER ================= */
+/* HEADER */
 .header {
   height: 90px;
   background: url("/static/robot_in_space.png") center -55px / cover no-repeat;
@@ -51,7 +52,6 @@ body {
   height: 22px;
   border-radius: 50%;
   background: #3b82f6;
-  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -59,7 +59,7 @@ body {
   cursor: pointer;
 }
 
-/* ================= OVERLAY ================= */
+/* DRAWER */
 .drawer-overlay {
   position: fixed;
   inset: 0;
@@ -74,7 +74,6 @@ body {
   pointer-events: all;
 }
 
-/* ================= DRAWER ================= */
 .drawer {
   position: fixed;
   top: 0;
@@ -106,9 +105,7 @@ body {
   padding: 14px;
   margin-bottom: 18px;
 }
-.drawer .balance-card strong {
-  font-size: 20px;
-}
+
 .drawer .balance-card button {
   margin-top: 10px;
   width: 100%;
@@ -120,13 +117,14 @@ body {
   font-weight: 600;
   cursor: pointer;
 }
+
 .drawer .item {
   padding: 14px 0;
   border-bottom: 1px solid rgba(255,255,255,.08);
   cursor: pointer;
 }
 
-/* ================= MAIN ================= */
+/* MAIN */
 .main {
   position: absolute;
   top: 90px;
@@ -140,7 +138,7 @@ body {
 .view { display: none; }
 .view.active { display: block; }
 
-/* ================= CARD ================= */
+/* CARD */
 .card {
   background: linear-gradient(180deg, #0e162a, #070b17);
   border-radius: 22px;
@@ -148,30 +146,7 @@ body {
   margin-bottom: 16px;
 }
 
-/* ================= VPN ================= */
-.row {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(255,255,255,.08);
-}
-.row:last-child { border-bottom: none; }
-.status { color: #22c55e; }
-
-.primary-btn {
-  margin-top: 14px;
-  width: 100%;
-  padding: 14px;
-  border-radius: 14px;
-  border: none;
-  background: #3b82f6;
-  color: #fff;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-/* ================= TOPUP ================= */
+/* TOPUP */
 .topup-title {
   font-size: 22px;
   font-weight: 700;
@@ -191,7 +166,7 @@ body {
   flex: 1;
   background: #0f172a;
   border-radius: 16px;
-  padding: 14px;
+  padding: 18px;
   text-align: center;
   border: 2px solid transparent;
   cursor: pointer;
@@ -199,37 +174,31 @@ body {
 .pay-method.active {
   border-color: #3b82f6;
 }
-.pay-method span {
-  display: block;
-  margin-top: 6px;
-  font-weight: 600;
-}
-
-.amounts-title {
-  font-weight: 600;
-  margin-bottom: 8px;
-}
 
 .amount {
   background: #0f172a;
-  border-radius: 16px;
-  padding: 14px;
-  margin-bottom: 10px;
+  border-radius: 18px;
+  padding: 18px;
+  margin-bottom: 12px;
   cursor: pointer;
 }
 .amount.active {
   outline: 2px solid #3b82f6;
 }
-.amount strong {
-  font-size: 18px;
-}
-.amount small {
-  display: block;
-  opacity: .7;
-  margin-top: 4px;
+
+.primary-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 18px;
+  border: none;
+  background: #3b82f6;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
 }
 
-/* ================= футер НОВЫЙ ================= */
+/* FOOTER */
 .footer {
   position: absolute;
   bottom: 0;
@@ -241,7 +210,6 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-around;
-  z-index: 5;
 }
 
 .footer-btn {
@@ -250,12 +218,6 @@ body {
   color: #8b93b7;
   font-size: 12px;
   cursor: pointer;
-  transition: .2s;
-}
-.footer-btn span {
-  display: block;
-  font-size: 20px;
-  margin-bottom: 4px;
 }
 .footer-btn.active {
   color: #3b82f6;
@@ -271,10 +233,5 @@ body {
   justify-content: center;
   color: #fff;
   font-weight: 700;
-  box-shadow:
-    0 0 18px rgba(59,130,246,.6),
-    0 0 36px rgba(59,130,246,.35);
-  transform: translateY(-14px);
-  cursor: pointer;
 }
 

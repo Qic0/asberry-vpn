@@ -1,42 +1,37 @@
 import requests
 import uuid
 
-XUI_BASE_URL = "https://127.0.0.1:31308"
-XUI_USERNAME = "admin"
-XUI_PASSWORD = "admin"
+class XUIService:
+    def __init__(self, base_url, panel_path, username, password):
+        self.base_url = base_url
+        self.panel_path = panel_path
+        self.session = requests.Session()
 
-session = requests.Session()
+        self.session.post(
+            f"{self.base_url}/{self.panel_path}/login",
+            json={"username": username, "password": password}
+        )
 
-def login():
-    r = session.post(
-        f"{XUI_BASE_URL}/login",
-        json={"username": XUI_USERNAME, "password": XUI_PASSWORD},
-        verify=False,
-    )
-    r.raise_for_status()
+    def add_client(self, inbound_id: int, telegram_id: int):
+        client_uuid = str(uuid.uuid4())
+        email = f"tg_{telegram_id}"
 
-def create_vpn_client(user_id: int):
-    email = f"user_{user_id}_{uuid.uuid4().hex[:6]}"
+        payload = {
+            "id": inbound_id,
+            "settings": {
+                "clients": [{
+                    "id": client_uuid,
+                    "email": email,
+                    "enable": True
+                }]
+            }
+        }
 
-    payload = {
-        "email": email,
-        "enable": True,
-        "limitIp": 1,
-        "totalGB": 0,
-        "expiryTime": 0,
-    }
+        r = self.session.post(
+            f"{self.base_url}/{self.panel_path}/panel/api/inbounds/addClient",
+            json=payload
+        )
+        r.raise_for_status()
 
-    r = session.post(
-        f"{XUI_BASE_URL}/panel/api/inbounds/addClient",
-        json=payload,
-        verify=False,
-    )
-    r.raise_for_status()
-
-    vless_url = f"vless://{email}@YOUR_DOMAIN:443?encryption=none#AsberryVPN"
-
-    return {
-        "email": email,
-        "vless_url": vless_url,
-    }
+        return client_uuid
 
