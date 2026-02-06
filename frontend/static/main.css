@@ -3,11 +3,11 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: "Space Grotesk", "Manrope", sans-serif;
 }
 
 body {
-  background: #05070f;
+  background: radial-gradient(1200px 600px at 20% -10%, rgba(59,130,246,.18), transparent 60%), #05070f;
   color: #fff;
   height: 100vh;
   overflow: hidden;
@@ -146,6 +146,228 @@ body {
   margin-bottom: 16px;
 }
 
+/* SECTIONS */
+.section {
+  background: linear-gradient(180deg, rgba(15,23,42,.9), rgba(8,13,26,.95));
+  border-radius: 24px;
+  padding: 18px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(255,255,255,.06);
+  box-shadow: 0 20px 40px rgba(0,0,0,.25);
+}
+
+.hero-card {
+  background: radial-gradient(600px 220px at 10% 10%, rgba(96,165,250,.18), transparent 60%),
+              linear-gradient(180deg, rgba(15,23,42,.95), rgba(7,11,23,.95));
+}
+
+.section-kicker {
+  font-size: 12px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: #8ea2ff;
+  margin-bottom: 6px;
+}
+
+.section-title {
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.section-sub {
+  opacity: .75;
+  line-height: 1.4;
+}
+
+.split-card {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.split-block {
+  background: rgba(11,17,32,.75);
+  border-radius: 18px;
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,.06);
+}
+
+.split-title {
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.method-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.method-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(15,23,42,.9);
+  color: #fff;
+  border-radius: 16px;
+  padding: 12px;
+  cursor: pointer;
+  transition: transform .2s ease, border-color .2s ease;
+}
+
+.method-card.active {
+  border-color: #60a5fa;
+  transform: translateY(-1px);
+}
+
+.method-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: rgba(59,130,246,.18);
+  font-size: 18px;
+}
+
+.method-name {
+  font-weight: 700;
+}
+
+.method-hint {
+  font-size: 12px;
+  opacity: .7;
+}
+
+.plan-list {
+  display: grid;
+  gap: 10px;
+}
+
+.plan-card {
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(15,23,42,.9);
+  color: #fff;
+  border-radius: 16px;
+  padding: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: transform .2s ease, border-color .2s ease;
+}
+
+.plan-card.active {
+  border-color: #60a5fa;
+  transform: translateY(-1px);
+}
+
+.plan-main {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.plan-sub {
+  font-size: 12px;
+  opacity: .7;
+}
+
+.glow-btn {
+  box-shadow: 0 12px 32px rgba(59,130,246,.45);
+}
+
+/* HELP */
+.steps-card {
+  display: grid;
+  gap: 12px;
+}
+
+.step {
+  display: flex;
+  gap: 12px;
+  background: rgba(11,17,32,.8);
+  border-radius: 16px;
+  padding: 12px;
+  border: 1px solid rgba(255,255,255,.06);
+}
+
+.step-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: rgba(59,130,246,.18);
+  font-size: 18px;
+}
+
+.step-title {
+  font-weight: 800;
+  margin-bottom: 2px;
+}
+
+.step-text {
+  opacity: .75;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.store-card {
+  background: linear-gradient(180deg, rgba(12,18,34,.92), rgba(8,12,24,.95));
+}
+
+.store-title {
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.store-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.store-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 14px;
+  text-decoration: none;
+  color: #fff;
+  background: rgba(15,23,42,.95);
+  border: 1px solid rgba(255,255,255,.08);
+  transition: transform .2s ease, border-color .2s ease;
+}
+
+.store-btn:hover {
+  transform: translateY(-1px);
+  border-color: #60a5fa;
+}
+
+.store-icon {
+  font-size: 16px;
+}
+
+/* REVEAL ANIMATIONS */
+.reveal {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fadeUp .6s ease forwards;
+}
+.reveal.delay-1 { animation-delay: .08s; }
+.reveal.delay-2 { animation-delay: .16s; }
+
+@keyframes fadeUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (min-width: 720px) {
+  .split-card { grid-template-columns: 1fr 1fr; }
+  .store-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
 /* TOPUP */
 .topup-title {
   font-size: 22px;
@@ -198,6 +420,104 @@ body {
   cursor: pointer;
 }
 
+/* DEVICES */
+.devices-list {
+  margin: 14px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.devices-empty {
+  opacity: .7;
+  padding: 12px 0;
+}
+
+.device-card {
+  background: #f6f6f6;
+  color: #0f172a;
+  border-radius: 24px;
+  padding: 18px 18px 16px;
+  border: 1px solid rgba(0,0,0,.06);
+  box-shadow: 0 10px 24px rgba(0,0,0,.2);
+}
+
+.device-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.device-title {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.device-delete {
+  border: none;
+  background: transparent;
+  color: #ef4444;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 6px;
+}
+
+.device-info {
+  margin-top: 6px;
+}
+
+.device-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+}
+
+.device-info-row:last-child {
+  border-bottom: none;
+}
+
+.device-label {
+  color: #6b7280;
+  font-size: 15px;
+}
+
+.device-value {
+  font-weight: 700;
+}
+
+.device-status.active {
+  color: #16a34a;
+}
+
+.device-status.inactive {
+  color: #ef4444;
+}
+
+.device-copy {
+  width: 100%;
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: none;
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.device-hint {
+  margin-top: 8px;
+  text-align: center;
+  font-size: 12px;
+  color: #6b7280;
+}
+
 /* FOOTER */
 .footer {
   position: absolute;
@@ -234,4 +554,3 @@ body {
   color: #fff;
   font-weight: 700;
 }
-

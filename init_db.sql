@@ -4,35 +4,42 @@ PRAGMA foreign_keys = ON;
 CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     telegram_id INTEGER UNIQUE NOT NULL,
-    balance INTEGER NOT NULL DEFAULT 0,
+    first_name TEXT,
+    username TEXT,
+    balance_rub INTEGER NOT NULL DEFAULT 10,
+    last_billed_at DATETIME,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- VPN DEVICES
-CREATE TABLE vpn_devices (
+-- DEVICES (VPN)
+CREATE TABLE devices (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     telegram_id INTEGER NOT NULL,
 
+    xui_inbound_id INTEGER NOT NULL,
     xui_client_uuid TEXT NOT NULL,
+    xui_client_subid TEXT NOT NULL,
+    xui_client_email TEXT,
+
+    name TEXT,
     device_index INTEGER NOT NULL,   -- 1..15
 
-    enabled INTEGER NOT NULL DEFAULT 1,
+    enabled INTEGER NOT NULL DEFAULT 1, -- 1/0
+    price_per_day INTEGER NOT NULL DEFAULT 5,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     disabled_at DATETIME,
 
     FOREIGN KEY(user_id) REFERENCES users(id)
 );
 
--- BILLING LOG
-CREATE TABLE billing_logs (
+-- PAYMENTS (FUTURE)
+CREATE TABLE payments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
-    device_id INTEGER NOT NULL,
-    amount INTEGER NOT NULL, -- 5 rub
+    amount_rub INTEGER NOT NULL,
+    type TEXT NOT NULL, -- topup / charge
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN KEY(user_id) REFERENCES users(id),
-    FOREIGN KEY(device_id) REFERENCES vpn_devices(id)
+    FOREIGN KEY(user_id) REFERENCES users(id)
 );
-

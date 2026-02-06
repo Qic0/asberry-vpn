@@ -8,9 +8,6 @@ from config import settings
 BOT_TOKEN = settings.TG_BOT_TOKEN
 MINI_APP_URL = settings.MINI_APP_URL
 
-print("BOT TOKEN:", BOT_TOKEN[:10])
-print("MINI APP URL:", MINI_APP_URL)
-
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 router = Router()

@@ -5,10 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Asburium VPN</title>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Space+Grotesk:wght@400;600;700;800&display=swap" rel="stylesheet">
+
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <!-- CSS -->
-  <link rel="stylesheet" href="/static/main.css" />
+  <link rel="stylesheet" href="/static/main.css?v=20260206-1" />
 </head>
 
 <body>
@@ -60,41 +64,114 @@
         ➕ Создать VPN
       </button>
     </div>
+    <div id="devicesList" class="devices-list"></div>
   </div>
 
   <!-- TOPUP -->
   <div id="topup" class="view">
-    <div class="card">
-      <div class="topup-title">Пополнение баланса</div>
-      <div class="topup-sub">Выберите способ оплаты и сумму</div>
-
-      <div class="pay-methods">
-        <div class="pay-method active">💰<span>СБП</span></div>
-        <div class="pay-method">💳<span>Банковская карта</span></div>
-      </div>
-
-      <div class="amount active">
-        <strong>150 ₽</strong>
-        <small>Подписка на 1 месяц</small>
-      </div>
-      <div class="amount">
-        <strong>300 ₽</strong>
-        <small>Подписка на 2 месяца</small>
-      </div>
-      <div class="amount">
-        <strong>450 ₽</strong>
-        <small>Подписка на 3 месяца</small>
-      </div>
-
-      <button class="primary-btn" id="payBtn">
-        Перейти к оплате
-      </button>
+    <div class="section hero-card reveal">
+      <div class="section-kicker">Пополнение</div>
+      <h3 class="section-title">Быстрое пополнение баланса</h3>
+      <p class="section-sub">Выберите способ оплаты и удобный тариф. Оплата защищена.</p>
     </div>
+
+    <div class="section split-card reveal delay-1">
+      <div class="split-block">
+        <div class="split-title">Способ оплаты</div>
+        <div class="method-grid">
+          <button class="method-card active">
+            <div class="method-icon">⚡</div>
+            <div class="method-text">
+              <div class="method-name">СБП</div>
+              <div class="method-hint">Мгновенно</div>
+            </div>
+          </button>
+          <button class="method-card">
+            <div class="method-icon">💳</div>
+            <div class="method-text">
+              <div class="method-name">Банковская карта</div>
+              <div class="method-hint">Visa / MasterCard</div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <div class="split-block">
+        <div class="split-title">Тариф</div>
+        <div class="plan-list">
+          <button class="plan-card active">
+            <div class="plan-main">150 ₽</div>
+            <div class="plan-sub">1 месяц доступа</div>
+          </button>
+          <button class="plan-card">
+            <div class="plan-main">300 ₽</div>
+            <div class="plan-sub">2 месяца доступа</div>
+          </button>
+          <button class="plan-card">
+            <div class="plan-main">450 ₽</div>
+            <div class="plan-sub">3 месяца доступа</div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <button class="primary-btn glow-btn reveal delay-2" id="payBtn">
+      Перейти к оплате
+    </button>
   </div>
 
   <!-- HELP -->
   <div id="help" class="view">
-    <div class="card">Инструкции</div>
+    <div class="section hero-card reveal">
+      <div class="section-kicker">Инструкции</div>
+      <h3 class="section-title">Подключение за 3 минуты</h3>
+      <p class="section-sub">Ниже — понятные шаги и быстрые кнопки для скачивания HAPP.</p>
+    </div>
+
+    <div class="section steps-card reveal delay-1">
+      <div class="step">
+        <div class="step-icon">➕</div>
+        <div class="step-body">
+          <div class="step-title">Создайте подключение</div>
+          <div class="step-text">На главном экране нажмите кнопку «Создать VPN» и получите вашу ссылку.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-icon">⬇️</div>
+        <div class="step-body">
+          <div class="step-title">Установите HAPP</div>
+          <div class="step-text">Выберите устройство и установите приложение HAPP для подключения.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-icon">🔗</div>
+        <div class="step-body">
+          <div class="step-title">Вставьте ссылку</div>
+          <div class="step-text">В HAPP вставьте VPN‑ссылку и нажмите кнопку включения.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section store-card reveal delay-2">
+      <div class="store-title">Скачать HAPP</div>
+      <div class="store-grid">
+        <a class="store-btn" href="https://apps.apple.com/ru/app/happ-proxy-utility-plus/id6746188973" target="_blank" rel="noopener">
+          <span class="store-icon"></span> App Store
+        </a>
+        <a class="store-btn" href="https://play.google.com/store/apps/details?id=com.happproxy" target="_blank" rel="noopener">
+          <span class="store-icon">▶</span> Play Market
+        </a>
+        <a class="store-btn" href="https://github.com/Happ-proxy/happ-desktop/releases/latest/download/setup-Happ.x64.exe" target="_blank" rel="noopener">
+          <span class="store-icon">🪟</span> Windows
+        </a>
+        <a class="store-btn" href="https://play.google.com/store/apps/details?id=com.happproxy" target="_blank" rel="noopener">
+          <span class="store-icon">📺</span> Android TV
+        </a>
+        <a class="store-btn" href="https://apps.apple.com/ru/app/happ-proxy-utility-plus/id6746188973" target="_blank" rel="noopener">
+          <span class="store-icon">🍎</span> macOS
+        </a>
+      </div>
+    </div>
   </div>
 
 </main>
@@ -120,20 +197,154 @@ if (user) {
 }
 
 /* ================= API ================= */
+function setBalance(balanceRub) {
+  headerBalance.textContent = `${balanceRub} ₽`;
+  drawerBalance.textContent = `💰 ${balanceRub} ₽`;
+}
+
+async function loadMe() {
+  const res = await fetch("/api/me", {
+    headers: { "X-Telegram-Init-Data": tg.initData }
+  });
+  if (!res.ok) throw new Error(await res.text());
+  const me = await res.json();
+  setBalance(me.balance_rub ?? 0);
+}
+
+function escapeHtml(str) {
+  return String(str ?? "").replace(/[&<>"']/g, (ch) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "\"": "&quot;",
+    "'": "&#039;",
+  }[ch]));
+}
+
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try {
+      document.execCommand("copy");
+      return true;
+    } catch {
+      return false;
+    } finally {
+      document.body.removeChild(ta);
+    }
+  }
+}
+
+async function loadDevices() {
+  const res = await fetch("/api/vpn/list", {
+    headers: { "X-Telegram-Init-Data": tg.initData }
+  });
+  if (!res.ok) throw new Error(await res.text());
+  const data = await res.json();
+  const items = data.items || [];
+
+  if (!items.length) {
+    devicesList.innerHTML = `<div class="devices-empty">Устройств пока нет</div>`;
+    return;
+  }
+
+  devicesList.innerHTML = items.map(d => {
+    const statusText = d.enabled ? "Активен" : "Отключён";
+    const statusClass = d.enabled ? "active" : "inactive";
+    const fallbackIndex = d.device_index ?? d.id;
+    const name = d.name ? escapeHtml(d.name) : `Устройство ${fallbackIndex}`;
+    const price = `${d.price_per_day ?? 0} ₽ / день`;
+    return `
+      <div class="device-card">
+        <div class="device-head">
+          <div class="device-title">${name}</div>
+          <button class="device-delete" data-delete="${d.id}" title="Удалить">🗑</button>
+        </div>
+        <div class="device-info">
+          <div class="device-info-row">
+            <div class="device-label">Стоимость</div>
+            <div class="device-value">${price}</div>
+          </div>
+          <div class="device-info-row">
+            <div class="device-label">Трафик</div>
+            <div class="device-value">∞</div>
+          </div>
+          <div class="device-info-row">
+            <div class="device-label">Статус</div>
+            <div class="device-value device-status ${statusClass}">● ${statusText}</div>
+          </div>
+        </div>
+        <button class="device-copy" data-copy="${escapeHtml(d.vless_url)}">🔒 Скопировать VPN‑ссылку</button>
+        <div class="device-hint">Нажмите, чтобы скопировать в буфер</div>
+      </div>
+    `;
+  }).join("");
+
+  devicesList.querySelectorAll("[data-copy]").forEach(btn => {
+    btn.onclick = async () => {
+      const url = btn.getAttribute("data-copy") || "";
+      const ok = await copyText(url);
+      tg.showAlert(ok ? "Ссылка скопирована" : "Не удалось скопировать ссылку");
+    };
+  });
+
+  devicesList.querySelectorAll("[data-delete]").forEach(btn => {
+    btn.onclick = async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const id = Number(btn.getAttribute("data-delete"));
+      if (!id) return;
+      const ok = window.confirm("Удалить подключение?");
+      if (!ok) return;
+      try {
+        const res = await fetch("/api/vpn/delete", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Telegram-Init-Data": tg.initData,
+          },
+          body: JSON.stringify({ device_id: id }),
+        });
+        if (!res.ok) throw new Error(await res.text());
+        tg.showAlert("Подключение удалено");
+        await loadDevices();
+      } catch (err) {
+        console.error(err);
+        tg.showAlert("Ошибка удаления");
+      }
+    };
+  });
+}
+
 async function createVPN() {
   try {
+    const name = window.prompt("Название устройства (например iPhone)", "") || null;
     const res = await fetch("/api/vpn/create", {
       method: "POST",
       headers: {
-        "X-Telegram-Init-Data": tg.initData
-      }
+        "Content-Type": "application/json",
+        "X-Telegram-Init-Data": tg.initData,
+      },
+      body: JSON.stringify({ name }),
     });
 
     if (!res.ok) throw new Error(await res.text());
     const data = await res.json();
 
-    tg.showAlert("VPN создан");
+    const copied = await copyText(data.vless_url);
+    tg.showAlert(copied ? "VPN создан. Ссылка скопирована" : "VPN создан. Откройте консоль для ссылки");
     console.log("VLESS:", data.vless_url);
+    await loadMe();
+    await loadDevices();
 
   } catch (e) {
     console.error(e);
@@ -176,8 +387,17 @@ document.querySelectorAll("[data-tab]").forEach(btn => {
 document.getElementById("createVpnBtn").onclick = createVPN;
 
 payBtn.onclick = () => tg.showAlert("Переход к оплате");
+
+// Initial load
+(async () => {
+  try {
+    await loadMe();
+    await loadDevices();
+  } catch (e) {
+    console.error(e);
+  }
+})();
 </script>
 
 </body>
 </html>
-

@@ -42,4 +42,3 @@ def verify_init_data(init_data: str) -> dict:
         raise ValueError("No user in initData")
 
     return json.loads(data["user"])
-

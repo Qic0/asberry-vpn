@@ -9,6 +9,3 @@ class Settings(BaseSettings):
         extra = "ignore"
 
 settings = Settings()
-
-print("BOT TOKEN:", settings.TG_BOT_TOKEN[:10])
-
